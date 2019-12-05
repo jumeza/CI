@@ -1,0 +1,55 @@
+- name: Install Jenkins
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Open-JDK
+      apt:
+        name: openjdk-8-jdk
+        update_cache: yes
+        state: present
+    
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+    
+    - name: Ensure nginx is running
+      service:
+        name: nginx
+        state: started
+
+    - name: Add access to the Jenkins apt repository
+      apt_repository:
+        repo: deb http://pkg.jenkins.io/debian-stable binary/
+        update_cache: no
+        state: present
+        filename: 'jenkins'
+    
+    - name: Add key for the Jenkins apt repository
+      apt_key:
+        url: "https://pkg.jenkins.io/debian/jenkins-ci.org.key"
+        state: present
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        update_cache: yes
+        state: present
+
+    - name: Start & Enable Jenkins
+      systemd:
+        name: jenkins
+        state: started
+        enabled: true
+
+    - name: Sleep for 30 seconds and continue with play
+      wait_for: timeout=30
+
+    - name: Get init password Jenkins
+      shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+      changed_when: false
+      register: result
+
+    - name: Print init password Jenkins
+      debug:
+        var: result.stdout

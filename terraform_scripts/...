@@ -1,0 +1,16 @@
+# Create a new Ubuntu 18.04 t2.micro instance
+
+resource "aws_instance" "server_docker" {
+  ami           = "ami-02df9ea15c1778c9c"
+  instance_type = "t2.micro"
+  key_name 	= "key_terraform"
+  vpc_security_group_ids = [
+                  "${aws_security_group.allow_ssh.id}",
+                  "${aws_security_group.open_nginx_port.id}",  
+                  "${aws_security_group.allow_updates.id}"
+]
+
+tags = {
+    Name = "server_docker"
+  }
+}
